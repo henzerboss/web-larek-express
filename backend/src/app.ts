@@ -1,10 +1,10 @@
+import cors from 'cors';
+import dotenv from 'dotenv';
 import express from 'express';
 import mongoose from 'mongoose';
-import cors from 'cors';
 import path from 'path';
-import dotenv from 'dotenv';
+import { errors } from 'celebrate';
 import router from './routes';
-
 import { requestLogger, errorLogger } from './middlewares/logger';
 import errorHandler from './middlewares/errorHandler';
 
@@ -17,21 +17,30 @@ const {
 
 const app = express();
 
-app.use(requestLogger);
-
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-mongoose.connect(DB_ADDRESS);
+app.use(requestLogger);
 
 app.use(express.static(path.join(__dirname, 'public')));
 
-app.use('/', router);
+app.use('/api', router);
 
 app.use(errorLogger);
 
+app.use(errors());
+
 app.use(errorHandler);
+
+mongoose
+  .connect(DB_ADDRESS)
+  .then(() => {
+    console.log('Connected to MongoDB');
+  })
+  .catch((err) => {
+    console.error('MongoDB connection error:', err);
+  });
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);
