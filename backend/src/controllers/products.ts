@@ -1,0 +1,61 @@
+// src/controllers/products.ts
+import { Request, Response, NextFunction } from 'express';
+import { Error as MongooseError } from 'mongoose';
+import Product from '../models/product';
+import BadRequestError from '../errors/BadRequestError';
+import ConflictError from '../errors/ConflictError';
+
+export const getProducts = (
+  _req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  Product.find({})
+    .then((products) => {
+      res.send({
+        items: products,
+        total: products.length,
+      });
+    })
+    .catch(next);
+};
+
+export const createProduct = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  const {
+    title,
+    image,
+    category,
+    description,
+    price,
+  } = req.body;
+
+  Product.create({
+    title,
+    image,
+    category,
+    description,
+    price,
+  })
+    .then((product) => {
+      res.status(201).send(product);
+    })
+    .catch((error) => {
+      if (error instanceof MongooseError.ValidationError) {
+        return next(
+          new BadRequestError('Ошибка валидации данных при создании товара'),
+        );
+      }
+
+      if (error instanceof Error && error.message.includes('E11000')) {
+        return next(
+          new ConflictError('Товар с таким title уже существует'),
+        );
+      }
+
+      return next(error);
+    });
+};
