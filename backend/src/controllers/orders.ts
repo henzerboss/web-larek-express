@@ -1,4 +1,4 @@
-// src/controllers/order.ts
+// src/controllers/orders.ts
 import { Request, Response, NextFunction } from 'express';
 import { faker } from '@faker-js/faker';
 import Product from '../models/product';
@@ -46,10 +46,7 @@ const createOrder = async (
 
     const id = faker.string.uuid();
 
-    res.status(200).send({
-      id,
-      total: sum,
-    });
+    res.send({ id, total: sum });
   } catch (error) {
     next(error);
   }
