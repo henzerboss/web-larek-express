@@ -38,7 +38,10 @@ const createOrder = async (
       throw new BadRequestError('В заказе есть товары без цены');
     }
 
-    const sum = products.reduce((acc, product) => acc + (product.price ?? 0), 0);
+    const sum = products.reduce(
+      (acc, product) => acc + (product.price ?? 0),
+      0,
+    );
 
     if (sum !== total) {
       throw new BadRequestError('Некорректная сумма заказа');
@@ -46,7 +49,10 @@ const createOrder = async (
 
     const id = faker.string.uuid();
 
-    res.send({ id, total: sum });
+    res.status(200).send({
+      id,
+      total: sum,
+    });
   } catch (error) {
     next(error);
   }
